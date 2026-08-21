@@ -1,14 +1,44 @@
-const CACHE = 'pixel-world-v1'
-const CORE = [ './', './index.html', './manifest.webmanifest' ]
-self.addEventListener('install', (event) => event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE))))
-self.addEventListener('activate', (event) => event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))))
+const CACHE = 'pixel-world-v3'
+const OFFLINE_PAGE = './index.html'
+
+self.addEventListener('install', (event) =>
+{
+    self.skipWaiting()
+    event.waitUntil(caches.open(CACHE).then((cache) => cache.add(OFFLINE_PAGE)))
+})
+
+self.addEventListener('activate', (event) =>
+{
+    event.waitUntil(Promise.all([
+        caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))),
+        self.clients.claim()
+    ]))
+})
+
 self.addEventListener('fetch', (event) =>
 {
     if(event.request.method !== 'GET') return
-    event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) =>
+    const requestURL = new URL(event.request.url)
+
+    // Network-first navigations prevent stale HTML from referencing assets
+    // removed by a newer atomic Netlify deployment.
+    if(event.request.mode === 'navigate')
     {
-        const copy = response.clone()
-        caches.open(CACHE).then((cache) => cache.put(event.request, copy))
-        return response
-    }).catch(() => caches.match('./index.html'))))
+        event.respondWith(fetch(event.request).then((response) =>
+        {
+            const copy = response.clone()
+            caches.open(CACHE).then((cache) => cache.put(OFFLINE_PAGE, copy))
+            return response
+        }).catch(() => caches.match(OFFLINE_PAGE)))
+        return
+    }
+
+    if(requestURL.origin === self.location.origin && requestURL.pathname.includes('/assets/'))
+    {
+        event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) =>
+        {
+            if(response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()))
+            return response
+        })))
+    }
 })

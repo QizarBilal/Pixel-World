@@ -50,6 +50,8 @@ test('offline application assets are configured', async() =>
     const worker = await source('public/service-worker.js')
     assert.equal(manifest.short_name, 'Pixel World')
     assert.match(worker, /caches\.open/)
+    assert.match(worker, /request\.mode === 'navigate'/)
+    assert.match(worker, /skipWaiting/)
 })
 
 test('exploration activities and rewards are integrated', async() =>
