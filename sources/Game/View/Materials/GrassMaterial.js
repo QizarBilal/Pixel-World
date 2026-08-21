@@ -26,6 +26,10 @@ export default function GrassMaterial()
             uFresnelScale: { value: null },
             uFresnelPower: { value: null },
             uSunPosition: { value: null },
+            uSeason: { value: 0 },
+            uWindStrength: { value: 1 },
+            uGrassColor: { value: new THREE.Color('#71a83c') },
+            uGrassShadeColor: { value: new THREE.Color('#315b31') },
         },
         vertexShader: vertexShader,
         fragmentShader: fragmentShader

@@ -118,7 +118,24 @@ export default class Grass
         this.material.uniforms.uFresnelScale.value = 0.5
         this.material.uniforms.uFresnelPower.value = 2
         this.material.uniforms.uSunPosition.value = new THREE.Vector3(- 0.5, - 0.5, - 0.5)
+        this.applyTheme()
+        this.view.theme.events.on('change', () => this.applyTheme())
         // this.material.wireframe = true
+    }
+
+    applyTheme()
+    {
+        const mode = this.view.theme.mode
+        const palettes = {
+            summer: { color: '#72ad3f', shade: '#315b31', wind: 1.0 },
+            winter: { color: '#eaf5f5', shade: '#82999d', wind: 0.55 },
+            rainy: { color: '#3f8052', shade: '#173e32', wind: 2.4 }
+        }
+        const palette = palettes[mode]
+        this.material.uniforms.uSeason.value = this.view.theme.value
+        this.material.uniforms.uWindStrength.value = palette.wind
+        this.material.uniforms.uGrassColor.value.set(palette.color)
+        this.material.uniforms.uGrassShadeColor.value.set(palette.shade)
     }
 
     setMesh()
@@ -139,6 +156,7 @@ export default class Grass
         const sunState = this.state.sun
 
         this.material.uniforms.uTime.value = this.time.elapsed
+        this.material.uniforms.uWindStrength.value = (this.view.theme.mode === 'rainy' ? 1.5 : .55) + this.view.theme.settings.wind * 1.7
         this.material.uniforms.uSunPosition.value.set(sunState.position.x, sunState.position.y, sunState.position.z)
         
         this.mesh.position.set(playerPosition[0], 0, playerPosition[2])
@@ -185,7 +203,7 @@ export default class Grass
             }
             
             // Texture D
-            const dChunkSate = bChunkSate.neighbours.get(chunkPositionRatioZ < 0.5 ? 'n' : 's')
+            const dChunkSate = bChunkSate && bChunkSate.neighbours ? bChunkSate.neighbours.get(chunkPositionRatioZ < 0.5 ? 'n' : 's') : false
 
             if(dChunkSate && dChunkSate.terrain && dChunkSate.terrain.renderInstance.texture)
             {

@@ -31,7 +31,33 @@ export default class Sky
         this.setSphere()
         this.setSun()
         this.setStars()
+        this.applyTheme()
+        this.view.theme.events.on('change', () => this.applyTheme())
         this.setDebug()
+    }
+
+    applyTheme()
+    {
+        const mode = this.view.theme.mode
+        const palettes = {
+            summer: { low:'#f7e5a4', high:'#298ee8', nightLow:'#164d7a', nightHigh:'#061c36', dawn:'#ff8b54', sun:'#fff1a8', sunPower:1.25, stars:0.46 },
+            winter: { low:'#f5fbff', high:'#8ebedb', nightLow:'#b7d1df', nightHigh:'#526f86', dawn:'#e8c9c2', sun:'#ffffff', sunPower:0.62, stars:0.25 },
+            rainy: { low:'#8da7b2', high:'#263d52', nightLow:'#334854', nightHigh:'#101d2b', dawn:'#667f89', sun:'#b7cbd5', sunPower:0.12, stars:0.02 }
+        }
+        const palette = palettes[mode]
+        const uniforms = this.sphere.material.uniforms
+        uniforms.uColorDayCycleLow.value.set(palette.low)
+        uniforms.uColorDayCycleHigh.value.set(palette.high)
+        uniforms.uColorNightLow.value.set(palette.nightLow)
+        uniforms.uColorNightHigh.value.set(palette.nightHigh)
+        uniforms.uColorDawn.value.set(palette.dawn)
+        uniforms.uColorSun.value.set(palette.sun)
+        uniforms.uSunMultiplier.value = palette.sunPower
+        this.sun.mesh.material.color.set(palette.sun)
+        this.sun.mesh.material.opacity = mode === 'rainy' ? 0.18 : 1
+        this.sun.mesh.material.transparent = mode === 'rainy'
+        this.stars.material.uniforms.uBrightness.value = palette.stars
+        this.stars.points.visible = mode !== 'rainy'
     }
 
     setCustomRender()

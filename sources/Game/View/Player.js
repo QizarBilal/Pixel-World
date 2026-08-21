@@ -19,7 +19,16 @@ export default class Player
 
         this.setGroup()
         this.setHelper()
+        this.applyTheme()
+        this.view.theme.events.on('change', () => this.applyTheme())
         this.setDebug()
+    }
+
+    applyTheme()
+    {
+        const colors = { summer: '#fff0a8', winter: '#d9f4ff', rainy: '#ffc86b' }
+        this.helper.material.uniforms.uColor.value.set(colors[this.view.theme.mode])
+        this.aura.material.color.set(colors[this.view.theme.mode])
     }
 
     setGroup()
@@ -38,6 +47,14 @@ export default class Player
         this.helper.geometry = new THREE.CapsuleGeometry(0.5, 0.8, 3, 16),
         this.helper.geometry.translate(0, 0.9, 0)
         this.group.add(this.helper)
+
+        this.aura = new THREE.Mesh(
+            new THREE.RingGeometry(0.72, 1.2, 40),
+            new THREE.MeshBasicMaterial({ color: '#fff0a8', transparent: true, opacity: 0.16, depthWrite: false, side: THREE.DoubleSide })
+        )
+        this.aura.rotation.x = - Math.PI * 0.5
+        this.aura.position.y = 0.025
+        this.group.add(this.aura)
 
         // const arrow = new THREE.Mesh(
         //     new THREE.ConeGeometry(0.2, 0.2, 4),
@@ -79,5 +96,8 @@ export default class Player
         // Helper
         this.helper.rotation.y = playerState.rotation
         this.helper.material.uniforms.uSunPosition.value.set(sunState.position.x, sunState.position.y, sunState.position.z)
+        const pulse = 1 + Math.sin(this.state.time.elapsed * 2.2) * 0.08
+        this.aura.scale.setScalar(pulse + Math.min(playerState.speed * 1.5, 0.35))
+        this.aura.material.opacity = 0.1 + Math.min(playerState.speed * 2, 0.22)
     }
 }

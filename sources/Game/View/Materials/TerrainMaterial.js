@@ -18,6 +18,12 @@ export default function TerrainMaterial()
             uFogTexture: { value: null },
             uGrassDistance: { value: null },
             uTexture: { value: null }
+            ,uSeason: { value: 0 }
+            ,uGroundColor: { value: new THREE.Color('#5f8f35') }
+            ,uGroundShadeColor: { value: new THREE.Color('#244b2e') }
+            ,uRockColor: { value: new THREE.Color('#6f7662') }
+            ,uSnowColor: { value: new THREE.Color('#f4fbff') }
+            ,uFogIntensity: { value: 0.0025 }
         },
         vertexShader: vertexShader,
         fragmentShader: fragmentShader

@@ -18,6 +18,10 @@ uniform float uFresnelOffset;
 uniform float uFresnelScale;
 uniform float uFresnelPower;
 uniform vec3 uSunPosition;
+uniform float uSeason;
+uniform float uWindStrength;
+uniform vec3 uGrassColor;
+uniform vec3 uGrassShadeColor;
 
 attribute vec2 center;
 // attribute float tipness;
@@ -89,8 +93,9 @@ void main()
     // Wind
     vec2 noiseUv = modelPosition.xz * 0.02 + uTime * 0.05;
     vec4 noiseColor = texture2D(uNoiseTexture, noiseUv);
-    modelPosition.x += (noiseColor.x - 0.5) * tipness * scale;
-    modelPosition.z += (noiseColor.y - 0.5) * tipness * scale;
+    modelPosition.x += ((noiseColor.x - 0.5) + sin(uTime * 1.7 + modelPosition.z * 0.08) * 0.18) * tipness * scale * uWindStrength;
+    modelPosition.z += (noiseColor.y - 0.5) * tipness * scale * uWindStrength;
+    modelPosition.y = mix(modelCenter.y, modelPosition.y, uSeason < 1.5 ? 1.0 : 0.86);
 
     // Final position
     vec4 viewPosition = viewMatrix * modelPosition;
@@ -102,10 +107,16 @@ void main()
     vec3 viewNormal = normalize(normalMatrix * normal);
 
     // Grass color
-    vec3 uGrassDefaultColor = vec3(0.52, 0.65, 0.26);
-    vec3 uGrassShadedColor = vec3(0.52 / 1.3, 0.65 / 1.3, 0.26 / 1.3);
+    vec3 uGrassDefaultColor = uGrassColor;
+    vec3 uGrassShadedColor = uGrassShadeColor;
     vec3 lowColor = mix(uGrassShadedColor, uGrassDefaultColor, 1.0 - scale); // Match the terrain
     vec3 color = mix(lowColor, uGrassDefaultColor, tipness);
+    if(uSeason > 0.5 && uSeason < 1.5)
+    {
+        color = mix(vec3(0.62, 0.70, 0.72), vec3(0.98, 1.0, 1.0), tipness * 0.8 + 0.2);
+        modelPosition.xyz = mix(modelCenter.xyz, modelPosition.xyz, scale * 0.42);
+        gl_Position = projectionMatrix * viewMatrix * modelPosition;
+    }
 
     // Sun shade
     float sunShade = getSunShade(normal);

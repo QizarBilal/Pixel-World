@@ -1,4 +1,9 @@
 import * as THREE from 'three'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js'
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 
 import Game from '@/Game.js'
 import View from '@/View/View.js'
@@ -21,6 +26,25 @@ export default class Renderer
         this.camera = this.view.camera
 
         this.setInstance()
+        this.setPostProcessing()
+    }
+
+    setPostProcessing()
+    {
+        const size = new THREE.Vector2(this.viewport.width, this.viewport.height)
+        this.composer = new EffectComposer(this.instance)
+        this.renderPass = new RenderPass(this.scene, this.camera.instance)
+        this.ssaoPass = new SSAOPass(this.scene, this.camera.instance, size.x, size.y)
+        this.ssaoPass.kernelRadius = 7
+        this.ssaoPass.minDistance = 0.002
+        this.ssaoPass.maxDistance = 0.12
+        this.bloomPass = new UnrealBloomPass(size, 0.22, 0.55, 0.84)
+        this.bokehPass = new BokehPass(this.scene, this.camera.instance, { focus: 18, aperture: 0.00001, maxblur: 0.004, width:size.x, height:size.y })
+        this.bokehPass.enabled = false
+        this.composer.addPass(this.renderPass)
+        this.composer.addPass(this.ssaoPass)
+        this.composer.addPass(this.bloomPass)
+        this.composer.addPass(this.bokehPass)
     }
 
     setInstance()
@@ -30,7 +54,8 @@ export default class Renderer
         // Renderer
         this.instance = new THREE.WebGLRenderer({
             alpha: false,
-            antialias: true
+            antialias: true,
+            preserveDrawingBuffer: true
         })
         
         this.instance.sortObjects = false
@@ -44,6 +69,10 @@ export default class Renderer
         this.instance.setClearColor(this.clearColor, 1)
         this.instance.setSize(this.viewport.width, this.viewport.height)
         this.instance.setPixelRatio(this.viewport.clampedPixelRatio)
+        this.composer.setSize(this.viewport.width, this.viewport.height)
+        this.instance.outputEncoding = THREE.sRGBEncoding
+        this.instance.toneMapping = THREE.ACESFilmicToneMapping
+        this.instance.toneMappingExposure = 1.08
 
         // this.instance.physicallyCorrectLights = true
         // this.instance.gammaOutPut = true
@@ -75,7 +104,7 @@ export default class Renderer
         if(this.debug.stats)
             this.debug.stats.beforeRender()
 
-        this.instance.render(this.scene, this.camera.instance)
+        this.composer.render()
 
         if(this.debug.stats)
             this.debug.stats.afterRender()

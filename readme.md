@@ -1,14 +1,41 @@
-# Infinite World
+# Pixel World
 
-Just an infinite procedurally generated world in WebGL with Three.js.
+An infinite procedural landscape transformed into a cinematic seasonal exploration experience.
 
-No purpose, just having fun.
+## Highlights
 
-![Infinite World Screenshot](public/social/share-1200x630.png?raw=true "Infinite World Screenshot")
+- Summer, winter, and storm ecosystems
+- Infinite terrain with adaptive level of detail
+- SSAO, bloom, cinematic depth of field, atmospheric fog, and seasonal grading
+- Procedural vegetation, snowfall, rainfall, lightning, water, clouds, and ambience
+- World profiles, shareable seeds, persistent exploration, map, journal, and discoveries
+- Photo studio, visual presets, weather timeline, diagnostics, and adaptive quality
+- Keyboard, controller, and touch input
+- Accessibility controls and offline PWA support
 
-## Instructions
+## Controls
 
-```
+- `WASD` / arrow keys — move
+- Mouse drag — look
+- `V` — camera mode
+- `1`, `2`, `3` — summer, winter, rainy
+- `M` — world map
+- `O` — photo mode
+- `H` — cinematic interface
+- `/` — command palette
+
+## Development
+
+```bash
 npm install
 npm run dev
 ```
+
+Run verification with:
+
+```bash
+npm test
+npm run build
+```
+
+Built with Three.js, GLSL, Web Workers, and Vite. Based on Bruno Simon's original Infinite World experiment.

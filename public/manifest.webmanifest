@@ -1,0 +1,12 @@
+{
+    "name": "Pixel World — Infinite Explorer",
+    "short_name": "Pixel World",
+    "description": "A living, infinite procedural landscape.",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#07151b",
+    "theme_color": "#102b2c",
+    "icons": [
+        { "src": "social/share-1200x630.png", "sizes": "1200x630", "type": "image/png", "purpose": "any" }
+    ]
+}

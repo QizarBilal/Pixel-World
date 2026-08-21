@@ -51,6 +51,8 @@ export default class Terrains
         this.material.uniforms.uSunPosition.value = new THREE.Vector3(- 0.5, - 0.5, - 0.5)
         this.material.uniforms.uFogTexture.value = this.sky.customRender.texture
         this.material.uniforms.uGrassDistance.value = this.state.chunks.minSize
+        this.applyTheme()
+        this.view.theme.events.on('change', () => this.applyTheme())
 
         this.material.onBeforeRender = (renderer, scene, camera, geometry, mesh) =>
         {
@@ -66,6 +68,23 @@ export default class Terrains
         // )
         // dummy.position.y = 50
         // this.scene.add(dummy)
+    }
+
+    applyTheme()
+    {
+        const mode = this.view.theme.mode
+        const palettes = {
+            summer: { ground: '#69a63c', shade: '#2b5832', rock: '#727764', snow: '#f4fbff', fog: 0.0018 },
+            winter: { ground: '#b6c9ca', shade: '#60757a', rock: '#68757b', snow: '#ffffff', fog: 0.0032 },
+            rainy: { ground: '#3e7048', shade: '#183b31', rock: '#48565a', snow: '#dae4e8', fog: 0.0048 }
+        }
+        const palette = palettes[mode]
+        this.material.uniforms.uSeason.value = this.view.theme.value
+        this.material.uniforms.uGroundColor.value.set(palette.ground)
+        this.material.uniforms.uGroundShadeColor.value.set(palette.shade)
+        this.material.uniforms.uRockColor.value.set(palette.rock)
+        this.material.uniforms.uSnowColor.value.set(palette.snow)
+        this.material.uniforms.uFogIntensity.value = palette.fog
     }
 
     setDebug()
@@ -115,6 +134,8 @@ export default class Terrains
 
         this.material.uniforms.uPlayerPosition.value.set(playerPosition[0], playerPosition[1], playerPosition[2])
         this.material.uniforms.uSunPosition.value.set(sunState.position.x, sunState.position.y, sunState.position.z)
+        const baseFog = this.view.theme.mode === 'rainy' ? 0.0034 : this.view.theme.mode === 'winter' ? 0.0024 : 0.0013
+        this.material.uniforms.uFogIntensity.value = baseFog * (0.55 + this.view.theme.settings.fog)
     }
 
     resize()

@@ -33,6 +33,12 @@ export default class Camera
 
     update()
     {
+        const targetFov = this.view.theme.settings.fov
+        if(Math.abs(this.instance.fov - targetFov) > 0.01)
+        {
+            this.instance.fov += (targetFov - this.instance.fov) * 0.08
+            this.instance.updateProjectionMatrix()
+        }
         const playerSate = this.state.player
 
         // Apply coordinates from view

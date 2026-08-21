@@ -5,6 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Infinite World</title>
         <link rel="stylesheet" href="./sources/style.css">
+        <link rel="manifest" href="./manifest.webmanifest">
+        <meta name="theme-color" content="#102b2c">
 
         <meta itemprop="name" content="Infinite World">
         <meta itemprop="description" content="Infinite procedurally generated world by Bruno Simon">
@@ -25,6 +27,38 @@
     <body>
         <div class="game">
             <div class="ui">
+                <header class="topbar">
+                    <div class="brand">
+                        <span class="brand-mark">∞</span>
+                        <span><strong>Infinite World</strong><small>Find your calm beyond the horizon</small></span>
+                    </div>
+                    <div class="season-picker" role="group" aria-label="Choose a season">
+                        <button data-season="summer" type="button"><span>☀</span> Summer</button>
+                        <button data-season="winter" type="button"><span>❄</span> Winter</button>
+                        <button data-season="rainy" type="button"><span>☂</span> Rainy</button>
+                    </div>
+                    <div class="header-actions">
+                        <button class="icon-button" data-action="sound" type="button" aria-label="Toggle ambience">♪</button>
+                        <button class="icon-button" data-action="cinematic" type="button" aria-label="Toggle cinematic mode">◫</button>
+                        <button class="icon-button" data-action="settings" type="button" aria-label="Open world controls">☷</button>
+                    </div>
+                </header>
+                <aside class="world-panel" aria-label="World controls">
+                    <div class="panel-heading"><span><small>LIVE ENVIRONMENT</small><strong>World controls</strong></span><button data-action="settings" type="button">×</button></div>
+                    <label><span>Time of day <output data-output="time">Noon</output></span><input data-setting="time" type="range" min="0" max="1" step="0.001" value="0.75"></label>
+                    <label class="switch-row"><span><strong>Automatic daylight</strong><small>Let the sun travel naturally</small></span><input data-setting="auto-day" type="checkbox" checked></label>
+                    <label><span>Weather intensity <output data-output="weather">70%</output></span><input data-setting="weather" type="range" min="0" max="1" step="0.01" value="0.7"></label>
+                    <label><span>Wind strength <output data-output="wind">55%</output></span><input data-setting="wind" type="range" min="0" max="1" step="0.01" value="0.55"></label>
+                    <label><span>Atmospheric fog <output data-output="fog">50%</output></span><input data-setting="fog" type="range" min="0" max="1" step="0.01" value="0.5"></label>
+                    <label><span>Field of view <output data-output="fov">45°</output></span><input data-setting="fov" type="range" min="35" max="75" step="1" value="45"></label>
+                    <div class="quality"><span>Visual quality</span><div><button data-quality="low">Low</button><button data-quality="medium">Balanced</button><button data-quality="high" class="is-active">High</button></div></div>
+                    <div class="panel-hint">Press <kbd>H</kbd> to hide the interface · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> to change season</div>
+                </aside>
+                <div class="exploration-hud">
+                    <div class="compass"><span>W</span><strong data-hud="heading">N</strong><span>E</span></div>
+                    <div class="hud-stats"><span><small>ALTITUDE</small><strong data-hud="altitude">0 m</strong></span><i></i><span><small>SPEED</small><strong data-hud="speed">0.0</strong></span><i></i><span><small>POSITION</small><strong data-hud="position">0 · 0</strong></span></div>
+                </div>
+                <div class="weather-card"><i></i><span><small data-weather="description">Clear skies</small><strong class="season-status">Exploring <b>Summer</b></strong></span></div>
                 <div class="mobile-warning">
                     This experience isn't suited for mobile devices
                 </div>
@@ -37,36 +71,48 @@
                                 <div class="key">D</div>
                                 <div class="key">W</div>
                             </div>
-                            move
+                            <span>move</span>
                         </div>
                         <div class="element">
                             <div class="keys">
                                 <div class="key">F</div>
                             </div>
-                            fullscreen
+                            <span>fullscreen</span>
                         </div>
                         <div class="element">
                             <div class="keys">
                                 <div class="key">P</div>
                             </div>
-                            pointer lock
+                            <span>pointer lock</span>
                         </div>
                         <div class="element">
                             <div class="keys">
                                 <div class="key">V</div>
                             </div>
-                            view mode
+                            <span>view mode</span>
                         </div>
                         <div class="element">
                             <div class="keys">
                                 <div class="key">B</div>
                             </div>
-                            debug
+                            <span>debug</span>
                         </div>
                     </div>
                     <div class="group">
-                        Infinite procedurally generated world — <a href="https://github.com/brunosimon/infinite-world" target="_blank">GitHub</a>
+                        Infinite, peaceful, yours — <a href="https://github.com/brunosimon/infinite-world" target="_blank">GitHub ↗</a>
                     </div>
+                </div>
+            </div>
+            <div class="camera-drops" aria-hidden="true"></div>
+            <div class="welcome" role="dialog" aria-modal="true" aria-label="Welcome to Infinite World">
+                <div class="welcome-glow"></div>
+                <div class="welcome-content">
+                    <div class="welcome-mark">∞</div>
+                    <p class="eyebrow">A LIVING PROCEDURAL LANDSCAPE</p>
+                    <h1>Find your horizon.</h1>
+                    <p>Walk through endless seasons, follow the light, and let the world unfold around you.</p>
+                    <button data-action="enter" type="button">Begin exploring <span>→</span></button>
+                    <div class="welcome-options"><button data-action="sound" type="button">♪ Ambience on</button><span>WASD to move · Drag to look</span></div>
                 </div>
             </div>
         </div>

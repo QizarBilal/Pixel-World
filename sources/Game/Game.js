@@ -19,6 +19,7 @@ export default class Game
         Game.instance = this
 
         this.seed = 'p'
+        this.domElement = document.querySelector('.game')
         this.debug = new Debug()
         this.state = new State()
         this.view = new View()
