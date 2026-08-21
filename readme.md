@@ -2,6 +2,8 @@
 
 An infinite procedural landscape transformed into a cinematic seasonal exploration experience.
 
+Created and maintained by **Mohammed Qizar Bilal**.
+
 ## Highlights
 
 - Summer, winter, and storm ecosystems
@@ -38,4 +40,4 @@ npm test
 npm run build
 ```
 
-Built with Three.js, GLSL, Web Workers, and Vite. Based on Bruno Simon's original Infinite World experiment.
+Built with Three.js, GLSL, Web Workers, and Vite.

@@ -1,7 +1,7 @@
 {
   "name": "pixel-world",
   "version": "1.0.0",
-  "description": "",
+  "description": "A cinematic infinite procedural world with living seasons and immersive exploration tools.",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "vite build",
     "test": "node --test"
   },
-  "author": "",
+  "author": "Mohammed Qizar Bilal",
   "license": "ISC",
   "dependencies": {
     "@jniac/three-point-text-helper": "^1.0.8",

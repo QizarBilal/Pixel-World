@@ -69,7 +69,6 @@ export default class Renderer
         this.instance.setClearColor(this.clearColor, 1)
         this.instance.setSize(this.viewport.width, this.viewport.height)
         this.instance.setPixelRatio(this.viewport.clampedPixelRatio)
-        this.composer.setSize(this.viewport.width, this.viewport.height)
         this.instance.outputEncoding = THREE.sRGBEncoding
         this.instance.toneMapping = THREE.ACESFilmicToneMapping
         this.instance.toneMappingExposure = 1.08
@@ -97,6 +96,7 @@ export default class Renderer
         // Instance
         this.instance.setSize(this.viewport.width, this.viewport.height)
         this.instance.setPixelRatio(this.viewport.clampedPixelRatio)
+        this.composer.setSize(this.viewport.width, this.viewport.height)
     }
 
     update()
@@ -114,6 +114,6 @@ export default class Renderer
     {
         this.instance.renderLists.dispose()
         this.instance.dispose()
-        this.renderTarget.dispose()
+        this.composer.dispose()
     }
 }
