@@ -17,13 +17,13 @@ export default class Grass
         this.scene = this.view.scene
         this.noises = this.view.noises
 
-        this.details = 200
+        this.details = 260
         this.size = this.state.chunks.minSize
         this.count = this.details * this.details
         this.fragmentSize = this.size / this.details
-        this.bladeWidthRatio = 1.5
-        this.bladeHeightRatio = 4
-        this.bladeHeightRandomness = 0.5
+        this.bladeWidthRatio = 0.35
+        this.bladeHeightRatio = 3
+        this.bladeHeightRandomness = 0.38
         this.positionRandomness = 0.5
         this.noiseTexture = this.noises.create(128, 128)
 
@@ -127,9 +127,9 @@ export default class Grass
     {
         const mode = this.view.theme.mode
         const palettes = {
-            summer: { color: '#72ad3f', shade: '#315b31', wind: 1.0 },
-            winter: { color: '#eaf5f5', shade: '#82999d', wind: 0.55 },
-            rainy: { color: '#3f8052', shade: '#173e32', wind: 2.4 }
+            summer: { color: '#477c32', shade: '#18371f', wind: 0.75 },
+            winter: { color: '#cbd8d8', shade: '#617477', wind: 0.4 },
+            rainy: { color: '#28573a', shade: '#0e2a21', wind: 1.8 }
         }
         const palette = palettes[mode]
         this.material.uniforms.uSeason.value = this.view.theme.value

@@ -35,10 +35,10 @@ export default class Renderer
         this.composer = new EffectComposer(this.instance)
         this.renderPass = new RenderPass(this.scene, this.camera.instance)
         this.ssaoPass = new SSAOPass(this.scene, this.camera.instance, size.x, size.y)
-        this.ssaoPass.kernelRadius = 7
+        this.ssaoPass.kernelRadius = 3
         this.ssaoPass.minDistance = 0.002
-        this.ssaoPass.maxDistance = 0.12
-        this.bloomPass = new UnrealBloomPass(size, 0.22, 0.55, 0.84)
+        this.ssaoPass.maxDistance = 0.045
+        this.bloomPass = new UnrealBloomPass(size, 0.09, 0.32, 0.93)
         this.bokehPass = new BokehPass(this.scene, this.camera.instance, { focus: 18, aperture: 0.00001, maxblur: 0.004, width:size.x, height:size.y })
         this.bokehPass.enabled = false
         this.composer.addPass(this.renderPass)
@@ -71,7 +71,7 @@ export default class Renderer
         this.instance.setPixelRatio(this.viewport.clampedPixelRatio)
         this.instance.outputEncoding = THREE.sRGBEncoding
         this.instance.toneMapping = THREE.ACESFilmicToneMapping
-        this.instance.toneMappingExposure = 1.08
+        this.instance.toneMappingExposure = 0.78
 
         // this.instance.physicallyCorrectLights = true
         // this.instance.gammaOutPut = true

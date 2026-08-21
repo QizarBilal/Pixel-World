@@ -20,7 +20,7 @@ export default class Scenery
     setMeshes()
     {
         this.trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(.18, .28, 2.2, 5), new THREE.MeshBasicMaterial({ color:'#65482e' }), 55)
-        this.trees = new THREE.InstancedMesh(new THREE.ConeGeometry(1.25, 4.4, 7), new THREE.MeshBasicMaterial({ color:'#255b35' }), 55)
+        this.trees = new THREE.InstancedMesh(new THREE.ConeGeometry(.82, 3.4, 9), new THREE.MeshBasicMaterial({ color:'#255b35' }), 55)
         this.rocks = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshBasicMaterial({ color:'#687168' }), 90)
         this.flowers = new THREE.InstancedMesh(new THREE.OctahedronGeometry(.09, 0), new THREE.MeshBasicMaterial({ color:'#ffd85c' }), 220)
         for(const mesh of [ this.trunks, this.trees, this.rocks, this.flowers ])
@@ -52,7 +52,7 @@ export default class Scenery
             dummy.rotation.set(0, this.random(i, kind + 4) * Math.PI * 2, kind === 3 ? this.random(i, 8) * .35 : 0)
             dummy.scale.setScalar(scale)
             if(kind === 0) dummy.position.y += 1.1 * scale
-            if(kind === 1) dummy.position.y += 3.1 * scale
+            if(kind === 1) dummy.position.y += 2.7 * scale
             if(kind === 3) dummy.position.y += .12
             dummy.updateMatrix()
             mesh.setMatrixAt(i, dummy.matrix)

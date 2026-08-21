@@ -74,9 +74,9 @@ export default class Terrains
     {
         const mode = this.view.theme.mode
         const palettes = {
-            summer: { ground: '#69a63c', shade: '#2b5832', rock: '#727764', snow: '#f4fbff', fog: 0.0018 },
-            winter: { ground: '#b6c9ca', shade: '#60757a', rock: '#68757b', snow: '#ffffff', fog: 0.0032 },
-            rainy: { ground: '#3e7048', shade: '#183b31', rock: '#48565a', snow: '#dae4e8', fog: 0.0048 }
+            summer: { ground: '#3d702f', shade: '#172f20', rock: '#555449', snow: '#dce6df', fog: 0.00135 },
+            winter: { ground: '#87999a', shade: '#394b50', rock: '#50575a', snow: '#dce8ec', fog: 0.0022 },
+            rainy: { ground: '#274d35', shade: '#10251f', rock: '#343d3f', snow: '#bfcdd0', fog: 0.0036 }
         }
         const palette = palettes[mode]
         this.material.uniforms.uSeason.value = this.view.theme.value
@@ -134,7 +134,7 @@ export default class Terrains
 
         this.material.uniforms.uPlayerPosition.value.set(playerPosition[0], playerPosition[1], playerPosition[2])
         this.material.uniforms.uSunPosition.value.set(sunState.position.x, sunState.position.y, sunState.position.z)
-        const baseFog = this.view.theme.mode === 'rainy' ? 0.0034 : this.view.theme.mode === 'winter' ? 0.0024 : 0.0013
+        const baseFog = this.view.theme.mode === 'rainy' ? 0.0028 : this.view.theme.mode === 'winter' ? 0.0019 : 0.0009
         this.material.uniforms.uFogIntensity.value = baseFog * (0.55 + this.view.theme.settings.fog)
     }
 

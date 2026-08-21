@@ -22,7 +22,7 @@ export default class Terrains
 
         this.seed = this.game.seed + 'b'
         this.random = new seedrandom(this.seed)
-        this.subdivisions = 40
+        this.subdivisions = 64
         this.lacunarity = 2.05
         this.persistence = 0.45
         this.maxIterations = 6

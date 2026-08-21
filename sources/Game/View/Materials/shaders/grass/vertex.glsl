@@ -110,7 +110,8 @@ void main()
     vec3 uGrassDefaultColor = uGrassColor;
     vec3 uGrassShadedColor = uGrassShadeColor;
     vec3 lowColor = mix(uGrassShadedColor, uGrassDefaultColor, 1.0 - scale); // Match the terrain
-    vec3 color = mix(lowColor, uGrassDefaultColor, tipness);
+    float bladeVariation = sin(modelCenter.x * 3.17 + modelCenter.z * 2.41) * 0.5 + 0.5;
+    vec3 color = mix(lowColor * mix(0.72, 1.03, bladeVariation), uGrassDefaultColor * mix(0.86, 1.12, bladeVariation), tipness);
     if(uSeason > 0.5 && uSeason < 1.5)
     {
         color = mix(vec3(0.62, 0.70, 0.72), vec3(0.98, 1.0, 1.0), tipness * 0.8 + 0.2);

@@ -51,3 +51,10 @@ test('offline application assets are configured', async() =>
     assert.equal(manifest.short_name, 'Pixel World')
     assert.match(worker, /caches\.open/)
 })
+
+test('exploration activities and rewards are integrated', async() =>
+{
+    const adventures = await source('sources/Game/View/Adventures.js')
+    for(const feature of [ 'setCollectibles', 'startChallenge', 'collect', 'Horizon trail' ])
+        assert.match(adventures, new RegExp(feature))
+})

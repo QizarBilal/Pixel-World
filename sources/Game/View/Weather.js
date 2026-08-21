@@ -231,7 +231,7 @@ export default class Weather
         this.clouds.children.forEach((cloud) =>
         {
             cloud.material.color.set(rainy ? '#526573' : this.theme.mode === 'winter' ? '#d8e5e9' : '#fff7e4')
-            cloud.material.opacity = rainy ? .48 : this.theme.mode === 'winter' ? .32 : .18
+            cloud.material.opacity = rainy ? .3 : this.theme.mode === 'winter' ? .2 : .1
         })
         this.lightningTimer = 1.5 + Math.random() * 5
 

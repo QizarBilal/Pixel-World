@@ -56,12 +56,18 @@ void main()
 
     float heightMix = smoothstep(28.0, 105.0, modelPosition.y);
     float rockMix = smoothstep(0.22, 0.72, slope);
-    vec3 summerColor = mix(grassColor, uRockColor, rockMix * 0.78);
-    summerColor = mix(summerColor, vec3(0.82, 0.88, 0.62), heightMix * 0.2);
+    float broadNoise = sin(modelPosition.x * 0.031) * cos(modelPosition.z * 0.027);
+    float fineNoise = sin(modelPosition.x * 0.41 + modelPosition.z * 0.29) * 0.5 + 0.5;
+    float strata = sin(modelPosition.y * 0.48 + broadNoise * 3.0) * 0.5 + 0.5;
+    vec3 soilColor = vec3(0.22, 0.16, 0.10);
+    vec3 summerColor = mix(grassColor, soilColor, smoothstep(0.28, 0.7, slope) * 0.3);
+    summerColor = mix(summerColor, uRockColor * mix(0.72, 1.08, strata), rockMix * 0.84);
+    summerColor *= mix(0.82, 1.08, fineNoise) * mix(0.92, 1.04, broadNoise * 0.5 + 0.5);
+    summerColor = mix(summerColor, vec3(0.56, 0.61, 0.47), heightMix * 0.12);
     float snowCoverage = smoothstep(0.08, 0.48, slope) * 0.28 + smoothstep(-8.0, 48.0, modelPosition.y);
     snowCoverage = clamp(snowCoverage, 0.0, 1.0);
-    vec3 winterColor = mix(vec3(0.58, 0.67, 0.70), uSnowColor, snowCoverage);
-    vec3 rainyColor = mix(grassColor * vec3(0.56, 0.78, 0.72), uRockColor * 0.62, rockMix);
+    vec3 winterColor = mix(uRockColor * mix(0.72, 1.0, strata), uSnowColor * mix(0.82, 1.04, fineNoise), snowCoverage);
+    vec3 rainyColor = mix(grassColor * vec3(0.52, 0.7, 0.61), uRockColor * mix(0.45, 0.72, strata), rockMix);
     vec3 color = uSeason < 0.5 ? summerColor : (uSeason < 1.5 ? winterColor : rainyColor);
 
     // Sun shade
