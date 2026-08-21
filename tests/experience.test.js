@@ -58,3 +58,10 @@ test('exploration activities and rewards are integrated', async() =>
     for(const feature of [ 'setCollectibles', 'startChallenge', 'collect', 'Horizon trail' ])
         assert.match(adventures, new RegExp(feature))
 })
+
+test('living wildlife ecosystem is integrated', async() =>
+{
+    const wildlife = await source('sources/Game/View/Wildlife.js')
+    for(const feature of [ 'setBirds', 'setAnimals', 'setFish', 'setInsects', 'Wildlife discovered' ])
+        assert.match(wildlife, new RegExp(feature))
+})

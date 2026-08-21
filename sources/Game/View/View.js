@@ -13,6 +13,7 @@ import Scenery from './Scenery.js'
 import Experience from './Experience.js'
 import Studio from './Studio.js'
 import Adventures from './Adventures.js'
+import Wildlife from './Wildlife.js'
 
 import * as THREE from 'three'
 
@@ -49,6 +50,7 @@ export default class View
         this.experience = new Experience()
         this.studio = new Studio()
         this.adventures = new Adventures()
+        this.wildlife = new Wildlife()
     }
 
     resize()
@@ -73,6 +75,7 @@ export default class View
         this.experience.update()
         this.studio.update()
         this.adventures.update()
+        this.wildlife.update()
         this.camera.update()
         this.renderer.update()
     }
