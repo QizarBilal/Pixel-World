@@ -31,6 +31,14 @@ export default class Terrains
         this.power = 2
         this.elevationOffset = 1
 
+        const profiles = {
+            Valleys: { baseFrequency:0.003, baseAmplitude:180, power:2, elevationOffset:1 },
+            Mountains: { baseFrequency:0.0024, baseAmplitude:290, power:2.65, elevationOffset:5 },
+            Plains: { baseFrequency:0.0042, baseAmplitude:72, power:1.35, elevationOffset:3 },
+            Islands: { baseFrequency:0.0035, baseAmplitude:155, power:2.25, elevationOffset:-8 }
+        }
+        Object.assign(this, profiles[this.game.world.terrain] || profiles.Valleys)
+
         this.segments = this.subdivisions + 1
         this.iterationsFormula = Terrains.ITERATIONS_FORMULA_POWERMIX
 

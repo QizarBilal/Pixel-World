@@ -18,7 +18,15 @@ export default class Game
 
         Game.instance = this
 
-        this.seed = 'p'
+        const hash = new URLSearchParams(location.hash.replace(/^#/, ''))
+        let savedWorld = null
+        try { savedWorld = JSON.parse(localStorage.getItem('pixel-world-current')) }
+        catch { localStorage.removeItem('pixel-world-current') }
+        this.world = { name:'My Infinite World', seed:'p', terrain:'Valleys', climate:'Temperate', water:-5, day:60, ...savedWorld }
+        this.world.seed = hash.get('world') || this.world.seed || 'p'
+        this.world.water = Number(this.world.water)
+        this.world.day = Number(this.world.day)
+        this.seed = this.world.seed
         this.domElement = document.querySelector('.game')
         this.debug = new Debug()
         this.state = new State()
@@ -34,8 +42,11 @@ export default class Game
 
     update()
     {
-        this.state.update()
-        this.view.update()
+        if(!document.hidden)
+        {
+            this.state.update()
+            this.view.update()
+        }
 
         window.requestAnimationFrame(() =>
         {

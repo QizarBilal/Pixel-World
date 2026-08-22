@@ -13,7 +13,7 @@ export default class DayCycle
         this.autoUpdate = true
         this.timeProgress = 0
         this.progress = 0
-        this.duration = 15 // Seconds
+        this.duration = Math.max(15, Number(this.game.world.day) || 60)
 
         this.setDebug()
     }

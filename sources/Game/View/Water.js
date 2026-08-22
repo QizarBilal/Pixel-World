@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import View from '@/View/View.js'
 import State from '@/State/State.js'
+import Game from '@/Game.js'
 
 export default class Water
 {
@@ -8,6 +9,7 @@ export default class Water
     {
         this.view = View.getInstance()
         this.state = State.getInstance()
+        this.game = Game.getInstance()
         this.material = new THREE.ShaderMaterial({
             transparent: true, depthWrite: false,
             uniforms: { uTime:{ value:0 }, uSeason:{ value:0 }, uRain:{ value:0 } },
@@ -16,7 +18,7 @@ export default class Water
         })
         this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400, 100, 100), this.material)
         this.mesh.geometry.rotateX(-Math.PI*.5)
-        this.mesh.position.y = -5
+        this.mesh.position.y = Number.isFinite(this.game.world.water) ? this.game.world.water : -5
         this.view.scene.add(this.mesh)
         this.view.theme.events.on('change', () => this.applyTheme())
         this.applyTheme()
