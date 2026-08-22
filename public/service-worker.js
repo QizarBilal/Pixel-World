@@ -1,4 +1,4 @@
-const CACHE = 'pixel-world-v3'
+const CACHE = 'pixel-world-v4'
 const OFFLINE_PAGE = './index.html'
 
 self.addEventListener('install', (event) =>
@@ -29,7 +29,7 @@ self.addEventListener('fetch', (event) =>
             const copy = response.clone()
             caches.open(CACHE).then((cache) => cache.put(OFFLINE_PAGE, copy))
             return response
-        }).catch(() => caches.match(OFFLINE_PAGE)))
+        }).catch(async() => (await caches.match(OFFLINE_PAGE)) || Response.error()))
         return
     }
 

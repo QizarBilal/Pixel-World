@@ -6,7 +6,9 @@
     "display": "standalone",
     "background_color": "#07151b",
     "theme_color": "#102b2c",
+    "orientation": "any",
+    "categories": ["games", "entertainment"],
     "icons": [
-        { "src": "social/share-1200x630.png", "sizes": "1200x630", "type": "image/png", "purpose": "any" }
+        { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
     ]
 }
