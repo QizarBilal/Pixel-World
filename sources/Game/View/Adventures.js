@@ -30,7 +30,7 @@ export default class Adventures
     setEvents()
     {
         this.hud.querySelector('[data-trail]').onclick=()=>this.startChallenge()
-        window.addEventListener('keydown',e=>{if(e.code==='KeyR')this.startChallenge()})
+        window.addEventListener('keydown',e=>{if(e.code==='KeyR'&&!e.target.closest('input,textarea,select,[contenteditable="true"]'))this.startChallenge()})
         this.view.theme.events.on('change',()=>this.applyTheme())
     }
     random(i,s){const v=Math.sin(i*93.17+s*17.31+this.baseX*.019+this.baseZ*.023)*43758.545;return v-Math.floor(v)}
@@ -53,6 +53,7 @@ export default class Adventures
         item.userData.collected=true;item.visible=false;this.score++;this.streak=Math.min(9,this.streak+1);localStorage.setItem('pixel-world-score',this.score)
         this.hud.querySelector('[data-energy]').textContent=this.score;this.hud.querySelector('[data-streak]').textContent=`×${Math.max(1,this.streak)}`;this.hud.classList.remove('is-pulsing');void this.hud.offsetWidth;this.hud.classList.add('is-pulsing')
         this.view.experience.toast(`Wisp ${this.score} collected`,this.streak>2?`${this.streak} discovery streak`:'World energy');if(navigator.vibrate)navigator.vibrate([20,25,35])
+        this.view.experience.recordDiscovery('wisp', `World wisp ${this.score}`, 'Energy', { score:this.score })
         if(this.score%5===0){this.view.renderer.bloomPass.strength=.32;setTimeout(()=>this.view.renderer.bloomPass.strength=.09,1200)}
     }
     startChallenge()
@@ -68,7 +69,7 @@ export default class Adventures
     }
     endChallenge(success)
     {
-        if(!this.challenge)return;this.challenge.gates.forEach(g=>{this.scene.remove(g);g.geometry.dispose();g.material.dispose()});if(success){this.score+=10;localStorage.setItem('pixel-world-score',this.score);this.hud.querySelector('[data-energy]').textContent=this.score;this.view.experience.toast('Trail complete · +10 wisps','Horizon mastered')}this.challenge=null;this.hud.classList.remove('has-challenge')
+        if(!this.challenge)return;this.challenge.gates.forEach(g=>{this.scene.remove(g);g.geometry.dispose();g.material.dispose()});if(success){this.score+=10;localStorage.setItem('pixel-world-score',this.score);this.hud.querySelector('[data-energy]').textContent=this.score;this.view.experience.toast('Trail complete · +10 wisps','Horizon mastered');this.view.experience.recordDiscovery('trail',`Horizon trail ${Date.now()}`,'Journey',{score:10})}this.challenge=null;this.hud.classList.remove('has-challenge')
     }
     updateChallenge()
     {

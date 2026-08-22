@@ -83,6 +83,15 @@ export default class Renderer
         // this.instance.toneMappingExposure = 1.3
 
         this.context = this.instance.getContext()
+        this.instance.domElement.addEventListener('webglcontextlost', event =>
+        {
+            event.preventDefault()
+            this.view.experience?.toast('Graphics context paused. Trying to recover…', 'Renderer')
+        })
+        this.instance.domElement.addEventListener('webglcontextrestored', () =>
+        {
+            this.view.experience?.toast('Graphics restored', 'Renderer')
+        })
 
         // Add stats panel
         if(this.debug.stats)

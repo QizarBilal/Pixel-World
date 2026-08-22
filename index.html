@@ -60,9 +60,7 @@
                     <div class="hud-stats"><span><small>ALTITUDE</small><strong data-hud="altitude">0 m</strong></span><i></i><span><small>SPEED</small><strong data-hud="speed">0.0</strong></span><i></i><span><small>POSITION</small><strong data-hud="position">0 · 0</strong></span></div>
                 </div>
                 <div class="weather-card"><i></i><span><small data-weather="description">Clear skies</small><strong class="season-status">Exploring <b>Summer</b></strong></span></div>
-                <div class="mobile-warning">
-                    This experience isn't suited for mobile devices
-                </div>
+                <div class="mobile-warning">Rotate to landscape for a wider view · Touch controls are ready</div>
                 <div class="controls">
                     <div class="group">
                         <div class="element">
@@ -111,11 +109,13 @@
                     <div class="welcome-mark">∞</div>
                     <p class="eyebrow">A LIVING PROCEDURAL LANDSCAPE</p>
                     <h1>Find your horizon.</h1>
-                    <p>Walk through endless seasons, follow the light, and let the world unfold around you.</p>
+                    <p>Walk through endless seasons, discover living habitats, and build a journal that belongs to your world.</p>
+                    <div class="device-choice" role="group" aria-label="Choose controls"><button type="button" data-device="keyboard" class="is-active">⌨ Keyboard &amp; mouse</button><button type="button" data-device="touch">◉ Touch</button></div>
                     <button data-action="enter" type="button">Begin exploring <span>→</span></button>
-                    <div class="welcome-options"><button data-action="sound" type="button">♪ Ambience on</button><span>WASD to move · Drag to look</span></div>
+                    <div class="welcome-options"><button data-action="sound" type="button">♪ Ambience on</button><button data-skip-tutorial type="button">Skip tutorial</button></div>
                 </div>
             </div>
+            <div class="tutorial" role="status" aria-live="polite"><small>GETTING STARTED</small><strong data-tutorial-title>Take your first steps</strong><p data-tutorial-copy>Use WASD or the movement pad to explore.</p><div><i></i></div><button data-tutorial-skip>Skip</button></div>
         </div>
         <script type="module" src="./sources/index.js"></script>
     </body>

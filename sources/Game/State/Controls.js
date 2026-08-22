@@ -95,6 +95,7 @@ export default class Controls
         // Event
         window.addEventListener('keydown', (event) =>
         {
+            if(this.isEditing(event.target)) return
             const mapItem = this.keys.findPerCode(event.code)
             
             if(mapItem)
@@ -107,6 +108,7 @@ export default class Controls
 
         window.addEventListener('keyup', (event) =>
         {
+            if(this.isEditing(event.target)) return
             const mapItem = this.keys.findPerCode(event.code)
             
             if(mapItem)
@@ -127,6 +129,7 @@ export default class Controls
 
         window.addEventListener('pointerdown', (event) =>
         {
+            if(this.isEditing(event.target)) return
             this.pointer.down = true
         })
 
@@ -140,6 +143,11 @@ export default class Controls
         {
             this.pointer.down = false
         })
+    }
+
+    isEditing(target)
+    {
+        return Boolean(target?.closest?.('input, textarea, select, button, [contenteditable="true"], .studio-panel, .suite-modal, .command, .world-panel'))
     }
 
     update()

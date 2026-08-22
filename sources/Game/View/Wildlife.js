@@ -62,7 +62,7 @@ export default class Wildlife
     }
     discover(kind,label)
     {
-        if(this.discovered.has(kind))return;this.discovered.add(kind);localStorage.setItem('pixel-world-wildlife',JSON.stringify([...this.discovered]));this.view.experience.toast(label,'Wildlife discovered');this.status.querySelector('[data-wildlife]').textContent=label;if(navigator.vibrate)navigator.vibrate(30)
+        if(this.discovered.has(kind))return;this.discovered.add(kind);localStorage.setItem('pixel-world-wildlife',JSON.stringify([...this.discovered]));this.view.experience.toast(label,'Wildlife discovered');this.view.experience.recordDiscovery(`wildlife-${kind}`,label,'Wildlife',{rarity:kind==='birds'?'Common':'Rare'});this.status.querySelector('[data-wildlife]').textContent=label;if(navigator.vibrate)navigator.vibrate(30)
     }
     update()
     {

@@ -1,19 +1,23 @@
 import EventsEmitter from 'events'
 import State from '@/State/State.js'
+import Game from '@/Game.js'
 
 export default class Theme
 {
     constructor()
     {
         this.state = State.getInstance()
+        this.game = Game.getInstance()
         this.events = new EventsEmitter()
         this.modes = [ 'summer', 'winter', 'rainy' ]
-        this.mode = localStorage.getItem('infinite-world-season') || 'summer'
+        const saved = this.readPreferences()
+        const climates = { Alpine:'winter', Coastal:'rainy', Wild:'rainy', Temperate:'summer' }
+        this.mode = localStorage.getItem('infinite-world-season') || climates[this.game.world.climate] || 'summer'
         this.previousMode = this.mode
         this.transition = 1
-        this.quality = 'high'
-        this.sound = true
-        this.settings = { weather: 0.7, wind: 0.55, fog: 0.5, fov: 45 }
+        this.quality = saved.quality || (matchMedia('(pointer:coarse)').matches ? 'medium' : 'high')
+        this.sound = saved.sound ?? true
+        this.settings = { weather:0.7, wind:0.55, fog:0.5, fov:45, ...saved.settings }
 
         if(!this.modes.includes(this.mode))
             this.mode = 'summer'
@@ -21,6 +25,7 @@ export default class Theme
         this.setInterface()
         this.setKeyboard()
         this.apply()
+        this.applyPreferences(saved)
     }
 
     setInterface()
@@ -28,30 +33,35 @@ export default class Theme
         this.buttons = [ ...document.querySelectorAll('[data-season]') ]
         this.panel = document.querySelector('.world-panel')
         this.welcome = document.querySelector('.welcome')
+        this.tutorial = document.querySelector('.tutorial')
+        this.skipTutorial = false
+
+        document.querySelectorAll('[data-device]').forEach(button => button.addEventListener('click', () =>
+        {
+            document.querySelectorAll('[data-device]').forEach(item => item.classList.toggle('is-active', item === button))
+            document.documentElement.dataset.controls = button.dataset.device
+        }))
+        document.querySelector('[data-skip-tutorial]').addEventListener('click', () => this.skipTutorial = true)
+        document.querySelector('[data-tutorial-skip]').addEventListener('click', () => this.finishTutorial())
 
         for(const button of this.buttons)
             button.addEventListener('click', () => this.set(button.dataset.season))
 
         for(const button of document.querySelectorAll('[data-action="settings"]'))
-            button.addEventListener('click', () => this.panel.classList.toggle('is-open'))
+            button.addEventListener('click', () => {this.panel.classList.toggle('is-open');button.setAttribute('aria-expanded',this.panel.classList.contains('is-open'))})
 
         for(const button of document.querySelectorAll('[data-action="cinematic"]'))
             button.addEventListener('click', () => document.documentElement.classList.toggle('is-cinematic'))
 
         for(const button of document.querySelectorAll('[data-action="sound"]'))
-            button.addEventListener('click', () =>
-            {
-                this.sound = !this.sound
-                document.documentElement.classList.toggle('is-muted', !this.sound)
-                document.querySelectorAll('[data-action="sound"]').forEach((item) => item.classList.toggle('is-active', this.sound))
-                this.events.emit('sound', this.sound)
-            })
+            button.addEventListener('click', () => this.setSound(!this.sound))
 
         document.querySelector('[data-action="enter"]').addEventListener('click', () =>
         {
             this.welcome.classList.add('is-hidden')
             localStorage.setItem('infinite-world-welcomed', 'true')
             this.events.emit('enter')
+            if(!this.skipTutorial && localStorage.getItem('pixel-world-tutorial') !== 'complete') this.startTutorial()
         })
 
         if(localStorage.getItem('infinite-world-welcomed') === 'true')
@@ -70,14 +80,30 @@ export default class Theme
                 this.quality = button.dataset.quality
                 document.querySelectorAll('[data-quality]').forEach((item) => item.classList.toggle('is-active', item === button))
                 this.events.emit('quality', this.quality)
+                this.savePreferences()
             })
         }
+    }
+
+    startTutorial()
+    {
+        this.tutorial.classList.add('is-open')
+        this.tutorialStep = 0
+        this.tutorialOrigin = [...this.state.player.position.current]
+    }
+
+    finishTutorial()
+    {
+        this.tutorial.classList.remove('is-open')
+        localStorage.setItem('pixel-world-tutorial', 'complete')
+        this.tutorialStep = undefined
     }
 
     setKeyboard()
     {
         window.addEventListener('keydown', (event) =>
         {
+            if(event.target.closest('input,textarea,select,[contenteditable="true"]')) return
             if(event.code === 'Digit1') this.set('summer')
             if(event.code === 'Digit2') this.set('winter')
             if(event.code === 'Digit3') this.set('rainy')
@@ -107,6 +133,7 @@ export default class Theme
             else output.textContent = `${Math.round(parseFloat(input.value) * 100)}%`
         }
         this.events.emit('setting', key, this.settings[key])
+        this.savePreferences()
     }
 
     getTimeLabel(progress)
@@ -135,6 +162,37 @@ export default class Theme
         this.events.emit('change', mode, this.previousMode)
     }
 
+    setSound(enabled)
+    {
+        this.sound = Boolean(enabled)
+        document.documentElement.classList.toggle('is-muted', !this.sound)
+        document.querySelectorAll('[data-action="sound"]').forEach((item) => item.classList.toggle('is-active', this.sound))
+        this.events.emit('sound', this.sound)
+        this.savePreferences()
+    }
+
+    readPreferences()
+    {
+        try { return JSON.parse(localStorage.getItem('pixel-world-preferences')) || {} }
+        catch { return {} }
+    }
+
+    savePreferences()
+    {
+        localStorage.setItem('pixel-world-preferences', JSON.stringify({ quality:this.quality, sound:this.sound, settings:this.settings }))
+    }
+
+    applyPreferences(saved)
+    {
+        this.setSound(this.sound)
+        document.querySelectorAll('[data-quality]').forEach(item => item.classList.toggle('is-active', item.dataset.quality === this.quality))
+        for(const input of document.querySelectorAll('[data-setting]'))
+        {
+            const value = saved.settings?.[input.dataset.setting]
+            if(value !== undefined && input.type !== 'checkbox') input.value = value
+        }
+    }
+
     apply()
     {
         document.documentElement.dataset.season = this.mode
@@ -159,6 +217,14 @@ export default class Theme
             document.querySelector('[data-output="time"]').textContent = this.getTimeLabel(this.state.day.progress)
         }
         const player = this.state.player
+        if(this.tutorialStep === 0 && Math.hypot(player.position.current[0]-this.tutorialOrigin[0],player.position.current[2]-this.tutorialOrigin[2]) > 2)
+        {
+            this.tutorialStep=1;this.tutorial.querySelector('[data-tutorial-title]').textContent='Look around';this.tutorial.querySelector('[data-tutorial-copy]').textContent='Drag the world or move your pointer to look around.';this.tutorial.querySelector('i').style.width='66%';this.tutorialAngle=player.camera.thirdPerson.theta
+        }
+        if(this.tutorialStep === 1 && Math.abs(player.camera.thirdPerson.theta-this.tutorialAngle) > .25)
+        {
+            this.tutorialStep=2;this.tutorial.querySelector('[data-tutorial-title]').textContent='Choose your horizon';this.tutorial.querySelector('[data-tutorial-copy]').textContent='Open the map or follow a glowing trail. Press Escape to release the pointer.';this.tutorial.querySelector('i').style.width='100%';setTimeout(()=>this.finishTutorial(),4200)
+        }
         const angle = ((player.camera.thirdPerson.theta / (Math.PI * 2) * 360) % 360 + 360) % 360
         const headings = [ 'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW' ]
         document.querySelector('[data-hud="heading"]').textContent = headings[Math.round(angle / 45) % 8]

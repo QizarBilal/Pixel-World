@@ -9,11 +9,15 @@ export default class Experience
         this.state = State.getInstance()
         this.theme = this.view.theme
         this.trail = []
-        this.landmarks = new Set()
+        this.landmarks = this.readStore('pixel-world-landmarks', [])
+        this.discoveries = this.readStore('pixel-world-discoveries', [])
+        this.photos = this.readStore('pixel-world-photos', [])
         this.frameSamples = []
         this.autoQuality = true
+        this.lastFocus = null
         this.setInterface()
         this.setAdvancedPanel()
+        this.restoreAdvanced()
         this.setEvents()
         this.setTouch()
         this.setErrors()
@@ -50,6 +54,20 @@ export default class Experience
         if(key==='vegetation')this.view.scenery.refresh()
         this.theme.settings[key]=typeof value==='string'?parseFloat(value)||value:value
         this.theme.events.emit('setting',key,this.theme.settings[key])
+        const preferences=this.readStore('pixel-world-advanced',{});preferences[key]=value;this.writeStore('pixel-world-advanced',preferences)
+    }
+
+    restoreAdvanced()
+    {
+        const preferences=this.readStore('pixel-world-advanced',{})
+        for(const input of this.view.theme.panel.querySelectorAll('[data-advanced]'))
+        {
+            const value=preferences[input.dataset.advanced]
+            if(value===undefined)continue
+            if(input.type==='checkbox')input.checked=value
+            else input.value=value
+            this.applyAdvanced(input)
+        }
     }
 
     setInterface()
@@ -58,11 +76,11 @@ export default class Experience
         root.className = 'experience-suite'
         root.innerHTML = `
             <div class="quick-tools"><button data-suite="map" title="World map (M)">⌖</button><button data-suite="photo" title="Photo mode (O)">◎</button><button data-suite="presets" title="Visual presets">◇</button></div>
-            <section class="suite-modal map-modal"><div class="suite-head"><span><small>EXPLORATION LOG</small><strong>Infinite atlas</strong></span><button data-close>×</button></div><canvas width="900" height="560"></canvas><div class="map-legend"><span><i class="visited"></i>Visited</span><span><i class="water"></i>Water</span><span><i class="marker"></i>You</span><button data-marker>＋ Place marker</button></div></section>
-            <section class="suite-modal photo-modal"><div class="suite-head"><span><small>PRO CAMERA</small><strong>Photo mode</strong></span><button data-close>×</button></div><div class="photo-preview"><div class="focus-frame"></div></div><div class="photo-grid"><label>Exposure<input data-photo="exposure" type="range" min=".55" max="1.8" step=".01" value="1.08"></label><label>Saturation<input data-photo="saturation" type="range" min=".3" max="1.8" step=".01" value="1"></label><label>Focus<input data-photo="focus" type="range" min="0" max="10" step=".1" value="0"></label><label>Format<select data-photo="ratio"><option value="none">Native</option><option value="2.35">Cinema 2.35:1</option><option value="1">Square</option></select></label></div><div class="photo-actions"><label><input data-photo="player" type="checkbox"> Hide explorer</label><button data-capture>Capture PNG</button></div></section>
-            <section class="suite-modal preset-modal"><div class="suite-head"><span><small>CURATED ATMOSPHERES</small><strong>Visual journeys</strong></span><button data-close>×</button></div><div class="preset-grid"></div></section>
-            <div class="command"><input placeholder="Type a command…" aria-label="Command palette"><div></div></div>
-            <div class="toast-stack"></div><div class="season-progress"><i></i></div>
+            <section class="suite-modal map-modal" role="dialog" aria-modal="true" aria-labelledby="map-title"><div class="suite-head"><span><small>EXPLORATION LOG</small><strong id="map-title">Infinite atlas</strong></span><button data-close aria-label="Close map">×</button></div><canvas width="900" height="560" aria-label="Map of explored terrain"></canvas><p class="map-empty">Move through the world to draw your trail.</p><div class="map-legend"><span><i class="visited"></i>Visited</span><span><i class="water"></i>Water</span><span><i class="marker"></i>You</span><button data-marker>＋ Place marker</button></div><div class="marker-list" aria-label="Saved markers"></div></section>
+            <section class="suite-modal photo-modal" role="dialog" aria-modal="true" aria-labelledby="photo-title"><div class="suite-head"><span><small>PRO CAMERA</small><strong id="photo-title">Photo mode</strong></span><button data-close aria-label="Close photo mode">×</button></div><div class="photo-preview"><div class="focus-frame"></div></div><div class="photo-grid"><label>Exposure<input data-photo="exposure" type="range" min=".55" max="1.8" step=".01" value="1.08"></label><label>Saturation<input data-photo="saturation" type="range" min=".3" max="1.8" step=".01" value="1"></label><label>Focus<input data-photo="focus" type="range" min="0" max="10" step=".1" value="0"></label><label>Format<select data-photo="ratio"><option value="none">Native</option><option value="2.35">Cinema 2.35:1</option><option value="1">Square</option></select></label></div><div class="photo-actions"><label><input data-photo="player" type="checkbox"> Hide explorer</label><button data-capture>Capture PNG</button></div></section>
+            <section class="suite-modal preset-modal" role="dialog" aria-modal="true" aria-labelledby="preset-title"><div class="suite-head"><span><small>CURATED ATMOSPHERES</small><strong id="preset-title">Visual journeys</strong></span><button data-close aria-label="Close presets">×</button></div><div class="preset-grid"></div></section>
+            <div class="command" role="dialog" aria-modal="true" aria-label="Command palette"><input placeholder="Type a command…" aria-label="Command palette"><div></div></div>
+            <div class="toast-stack" role="status" aria-live="polite"></div><div class="season-progress"><i></i></div>
             <div class="touch-pad"><button data-move="forward">▲</button><button data-move="strafeLeft">◀</button><button data-move="backward">▼</button><button data-move="strafeRight">▶</button></div>
             <div class="post-fx"><i></i></div>`
         document.querySelector('.game').append(root)
@@ -114,31 +132,48 @@ export default class Experience
         })
         window.addEventListener('keydown', (event) =>
         {
+            const editing=event.target.closest('input,textarea,select,[contenteditable="true"]')
+            if(editing&&event.code!=='Escape'&&event.key!=='Tab')return
             if(event.code === 'KeyM') this.open('map')
             if(event.code === 'KeyO') this.open('photo')
             if(event.key === '/') { event.preventDefault(); this.openCommand() }
             if(event.code === 'Escape') this.closeModals()
+            if(event.key==='Tab')this.trapFocus(event)
         })
         this.setupCommand()
+    }
+
+    trapFocus(event)
+    {
+        const modal=this.root.querySelector('.suite-modal.is-open,.command.is-open')||document.querySelector('.studio-panel.is-open,.world-panel.is-open')
+        if(!modal)return
+        const items=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href]')].filter(item=>item.offsetParent!==null)
+        if(!items.length)return
+        const first=items[0],last=items[items.length-1]
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
     }
 
     open(name)
     {
         this.closeModals()
         const modal = name === 'map' ? this.map : name === 'photo' ? this.photo : this.presets
+        this.lastFocus = document.activeElement
         modal.classList.add('is-open')
+        document.querySelector('.ui').setAttribute('aria-hidden', 'true')
         document.documentElement.classList.toggle('is-photo', name === 'photo')
         if(name === 'map') this.drawMap()
+        requestAnimationFrame(() => modal.querySelector('button, input, select')?.focus())
     }
-    closeModals() { this.root.querySelectorAll('.suite-modal').forEach((item) => item.classList.remove('is-open')); this.command.classList.remove('is-open'); document.documentElement.classList.remove('is-photo') }
+    closeModals() { const hadOpen=this.root.querySelector('.suite-modal.is-open,.command.is-open');this.root.querySelectorAll('.suite-modal').forEach((item) => item.classList.remove('is-open'));this.command.classList.remove('is-open');document.querySelector('.ui').removeAttribute('aria-hidden');document.documentElement.classList.remove('is-photo');if(hadOpen)this.lastFocus?.focus?.() }
 
     setupCommand()
     {
-        const commands = [ ['Summer world',()=>this.theme.set('summer')],['Winter world',()=>this.theme.set('winter')],['Rainy world',()=>this.theme.set('rainy')],['Open map',()=>this.open('map')],['Photo mode',()=>this.open('photo')],['Cinematic mode',()=>document.documentElement.classList.toggle('is-cinematic')],['Toggle sound',()=>this.theme.events.emit('sound',!this.theme.sound)] ]
+        const commands = [ ['Summer world',()=>this.theme.set('summer')],['Winter world',()=>this.theme.set('winter')],['Rainy world',()=>this.theme.set('rainy')],['Open map',()=>this.open('map')],['Photo mode',()=>this.open('photo')],['Cinematic mode',()=>document.documentElement.classList.toggle('is-cinematic')],['Toggle sound',()=>this.theme.setSound(!this.theme.sound)] ]
         const input = this.command.querySelector('input'), results = this.command.querySelector('div')
         const render = () => { results.innerHTML=''; commands.filter(([name])=>name.toLowerCase().includes(input.value.toLowerCase())).forEach(([name,fn])=>{const b=document.createElement('button');b.textContent=name;b.onclick=()=>{fn();this.closeModals()};results.append(b)}) }
         input.oninput = render
-        this.openCommand = () => { this.closeModals(); this.command.classList.add('is-open'); input.value=''; render(); input.focus() }
+        this.openCommand = () => { this.closeModals();this.lastFocus=document.activeElement;this.command.classList.add('is-open');document.querySelector('.ui').setAttribute('aria-hidden','true');input.value='';render();input.focus() }
     }
 
     applyPhoto(input)
@@ -163,6 +198,8 @@ export default class Experience
         link.download = `infinite-world-${Date.now()}.png`
         link.href = this.view.renderer.instance.domElement.toDataURL('image/png')
         link.click()
+        const p=this.state.player.position.current,photo={id:Date.now(),season:this.theme.mode,x:Math.round(p[0]),z:Math.round(p[2]),time:this.state.day.progress}
+        this.photos.unshift(photo);this.photos=this.photos.slice(0,24);this.writeStore('pixel-world-photos',this.photos);this.recordDiscovery(`photo-${photo.id}`,`${this.theme.mode} horizon`,'Photo',photo)
         this.toast('Image saved', 'Photo mode')
     }
 
@@ -173,19 +210,35 @@ export default class Experience
         ctx.strokeStyle='rgba(130,210,190,.08)';ctx.lineWidth=1
         for(let x=0;x<w;x+=45){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
         for(let y=0;y<h;y+=45){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
-        if(!this.trail.length) return
-        const current=this.trail[this.trail.length-1], scale=1.4
-        ctx.strokeStyle='#75d6b3';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath()
-        this.trail.forEach((p,i)=>{const x=w/2+(p.x-current.x)*scale,y=h/2+(p.z-current.z)*scale;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()
+        const player=this.state.player.position.current,current=this.trail[this.trail.length-1]||{x:player[0],z:player[2]},scale=1.4
+        if(this.trail.length){ctx.strokeStyle='#75d6b3';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();this.trail.forEach((p,i)=>{const x=w/2+(p.x-current.x)*scale,y=h/2+(p.z-current.z)*scale;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}
         ctx.fillStyle='#ffe17a';ctx.beginPath();ctx.arc(w/2,h/2,7,0,Math.PI*2);ctx.fill()
         ctx.fillStyle='rgba(61,129,150,.38)';ctx.beginPath();ctx.arc(w*.2,h*.72,55,0,Math.PI*2);ctx.fill()
+        for(const marker of this.landmarks){const x=w/2+(marker.x-current.x)*scale,y=h/2+(marker.z-current.z)*scale;if(x<0||x>w||y<0||y>h)continue;ctx.fillStyle='#ff8b6b';ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fill()}
+        this.map.querySelector('.map-empty').hidden=this.trail.length>2
+        this.renderMarkers()
     }
 
     addLandmark(name)
     {
-        const p=this.state.player.position.current, key=`${Math.round(p[0])},${Math.round(p[2])}`
-        if(this.landmarks.has(key)) return
-        this.landmarks.add(key); this.toast(name, 'Landmark discovered'); if(navigator.vibrate) navigator.vibrate(45)
+        const p=this.state.player.position.current,key=`${Math.round(p[0])},${Math.round(p[2])}`
+        if(this.landmarks.some(item=>item.key===key)){this.toast('A marker already exists here','Map');return}
+        const marker={id:Date.now(),key,name:`${name} ${this.landmarks.length+1}`,x:Math.round(p[0]),z:Math.round(p[2]),season:this.theme.mode}
+        this.landmarks.push(marker);this.writeStore('pixel-world-landmarks',this.landmarks);this.recordDiscovery(`marker-${marker.id}`,marker.name,'Landmark',marker);this.drawMap();this.toast(marker.name,'Landmark saved');if(navigator.vibrate)navigator.vibrate(45)
+    }
+
+    renderMarkers()
+    {
+        const list=this.map.querySelector('.marker-list');list.innerHTML=''
+        for(const marker of this.landmarks){const row=document.createElement('div');row.innerHTML=`<span><strong>${marker.name}</strong><small>${marker.x}, ${marker.z} · ${marker.season}</small></span><button aria-label="Go to ${marker.name}">Go</button><button aria-label="Delete ${marker.name}">×</button>`;const buttons=row.querySelectorAll('button');buttons[0].onclick=()=>{this.state.player.position.current[0]=marker.x;this.state.player.position.current[2]=marker.z;this.closeModals();this.toast(marker.name,'Travelled to marker')};buttons[1].onclick=()=>{this.landmarks=this.landmarks.filter(item=>item.id!==marker.id);this.writeStore('pixel-world-landmarks',this.landmarks);this.drawMap();this.toast(marker.name,'Marker removed')};list.append(row)}
+    }
+
+    readStore(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fallback}catch{return fallback}}
+    writeStore(key,value){localStorage.setItem(key,JSON.stringify(value))}
+    recordDiscovery(id,title,type,details={})
+    {
+        if(this.discoveries.some(item=>item.id===id&&id!=='wisp'))return
+        this.discoveries.unshift({id,title,type,details,at:Date.now()});this.discoveries=this.discoveries.slice(0,120);this.writeStore('pixel-world-discoveries',this.discoveries);window.dispatchEvent(new CustomEvent('pixel-world-progress'))
     }
 
     toast(title, label)
@@ -214,7 +267,7 @@ export default class Experience
         if(!this.lastTrail || time.elapsed-this.lastTrail>.55){this.lastTrail=time.elapsed;this.trail.push({x:p[0],z:p[2],y:p[1]});if(this.trail.length>1200)this.trail.shift()}
         if(Math.abs(p[0])+Math.abs(p[2])>250&&!this.landmarks.has('wanderer')){this.landmarks.add('wanderer');this.toast('Beyond the familiar','Discovery unlocked')}
         this.frameSamples.push(time.delta);if(this.frameSamples.length>180)this.frameSamples.shift()
-        if(this.autoQuality&&this.frameSamples.length===180){const fps=1/(this.frameSamples.reduce((a,b)=>a+b,0)/180);if(fps<38&&this.theme.quality==='high'){this.theme.quality='medium';this.theme.events.emit('quality','medium');this.toast('Balanced quality enabled','Performance assistant');this.frameSamples=[]}}
+        if(this.autoQuality&&this.frameSamples.length===180){const fps=1/(this.frameSamples.reduce((a,b)=>a+b,0)/180),levels=['low','medium','high'],current=levels.indexOf(this.theme.quality);let next=current;if(fps<32)next=Math.max(0,current-1);else if(fps>56)next=Math.min(2,current+1);if(next!==current){this.theme.quality=levels[next];this.theme.events.emit('quality',this.theme.quality);document.querySelectorAll('[data-quality]').forEach(item=>item.classList.toggle('is-active',item.dataset.quality===this.theme.quality));this.theme.savePreferences();this.toast(`${this.theme.quality} quality enabled`,'Performance assistant')}this.frameSamples=[]}
         const pad=navigator.getGamepads?.()[0]
         if(pad){this.state.controls.keys.down.forward=pad.axes[1]<-.25;this.state.controls.keys.down.backward=pad.axes[1]>.25;this.state.controls.keys.down.strafeLeft=pad.axes[0]<-.25;this.state.controls.keys.down.strafeRight=pad.axes[0]>.25}
         document.documentElement.style.setProperty('--motion-blur',`${Math.min(this.state.player.speed*8,2)}px`)
